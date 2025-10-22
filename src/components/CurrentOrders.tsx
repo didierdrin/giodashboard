@@ -7,6 +7,7 @@ import {
   doc,
   updateDoc,
   Timestamp,
+  orderBy,
 } from "firebase/firestore";
 import { firestore as db } from "../../firebaseApp";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab } from "@mui/material";
@@ -56,24 +57,30 @@ const CurrentOrders = () => {
         q = query(
           collection(db, "whatsappOrdersGio"),
           where("rejected", "==", false),
-          where("paid", "==", false)
+          where("paid", "==", false),
+          orderBy("date", "desc") // Add sorting by date descending
         );
         break;
       case 1: // Completed
         q = query(
           collection(db, "whatsappOrdersGio"),
           where("rejected", "==", false),
-          where("paid", "==", true)
+          where("paid", "==", true),
+          orderBy("date", "desc") // Add sorting by date descending
         );
         break;
       case 2: // Rejected
         q = query(
           collection(db, "whatsappOrdersGio"),
-          where("rejected", "==", true)
+          where("rejected", "==", true),
+          orderBy("date", "desc") // Add sorting by date descending
         );
         break;
       default:
-        q = query(collection(db, "whatsappOrdersGio"));
+        q = query(
+          collection(db, "whatsappOrdersGio"),
+          orderBy("date", "desc") // Add sorting by date descending
+        );
     }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -319,7 +326,6 @@ const CurrentOrders = () => {
 export default CurrentOrders;
 
 
-
 // import { useState, useEffect } from "react";
 // import {
 //   collection,
@@ -409,10 +415,53 @@ export default CurrentOrders;
 //     return () => unsubscribe();
 //   }, [currentTab]);
 
+//   // Function to send confirmation message to customer
+//   const sendPaymentConfirmation = async (order: Order) => {
+//     try {
+//       const response = await fetch('https://giomessaging-lm99.onrender.com/api/send-order-confirmation', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           orderId: order.orderId,
+//           //action: 'payment_confirmation' // Add this to distinguish from order confirmation
+//         }),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error('Failed to send payment confirmation');
+//       }
+
+//       const result = await response.json();
+//       console.log('Payment confirmation sent successfully:', result);
+//       return result;
+//     } catch (error) {
+//       console.error('Error sending payment confirmation:', error);
+//       throw error;
+//     }
+//   };
+
 //   const handleUpdateOrderStatus = async (orderId: string, updates: Partial<Order>) => {
 //     try {
 //       const orderRef = doc(db, "whatsappOrdersGio", orderId);
+      
+//       // Check if we're updating paid status from false to true
+//       const currentOrder = orders.find(order => order.id === orderId);
+//       const isMarkingAsPaid = !currentOrder?.paid && updates.paid === true;
+      
 //       await updateDoc(orderRef, updates);
+
+//       // If order is being marked as paid, send confirmation message
+//       if (isMarkingAsPaid && currentOrder) {
+//         try {
+//           await sendPaymentConfirmation(currentOrder);
+//           console.log(`Payment confirmation sent for order: ${currentOrder.orderId}`);
+//         } catch (error) {
+//           console.error('Failed to send payment confirmation:', error);
+//           // You might want to show a notification to the admin here
+//         }
+//       }
 //     } catch (error) {
 //       console.error("Error updating order status:", error);
 //     }
@@ -596,4 +645,5 @@ export default CurrentOrders;
 // };
 
 // export default CurrentOrders;
+
 
